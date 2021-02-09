@@ -59,7 +59,7 @@ SO THAT:
 
 (1) Create the 'cluster creator' IAM role to use when we create the cluster
 
-    (-) Create IAM policy for cluster-aswcli creator role
+    (-) Create IAM policy for cluster-awscli creator role
 
         cd ~/environment/mglab-share-eks/demos/04-create-advanced-cluster-aws-cli-existing-vpc
 
@@ -68,7 +68,7 @@ SO THAT:
 
         aws iam create-policy --policy-name cluster-awscli-creator --policy-document file://./artifacts/04-DEMO-eks-creator-iam-policy-limited.json
 
-    (-) Create IAM Role for cluster-aswcli creator and attach the policy
+    (-) Create IAM Role for cluster-awscli creator and attach the policy
 
         sed  -i "s/\[\[AWSACCT\]\]/$C9_AWS_ACCT/g" ./artifacts/04-DEMO-eks-creator-iam-policy-trust.json
 
@@ -77,7 +77,7 @@ SO THAT:
 
 (2) Create the 'cluster ' IAM role for the K8s control plane
 
-    (-) Create IAM Role for cluster-aswcli cluster
+    (-) Create IAM Role for cluster-awscli cluster
 
         aws iam create-role --role-name cluster-awscli-cluster-role --assume-role-policy-document file://./artifacts/04-DEMO-eks-cluster-iam-policy-trust.json
         aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/AmazonEKSClusterPolicy --role-name cluster-awscli-cluster-role
@@ -104,7 +104,7 @@ SO THAT:
 
 (4) Create the EKS Cluster control plane
 
-    (-) Assume IAM role cluster-aswcli-creator & create the eks cluster
+    (-) Assume IAM role cluster-awscli-creator & create the eks cluster
 
         aws sts get-caller-identity
         aws iam list-roles --query 'Roles[].Arn' | grep cluster-awscli
@@ -397,25 +397,27 @@ SO THAT:
     kubectl delete ns wordpress-demo
 
     export C9_AWS_ACCT=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | grep accountId | awk -F '"' '{print$4}')
-    aws iam detach-role-policy --role-name cluster-aswcli-irsa-cluster-autoscaler-role --policy-arn arn:aws:iam::$C9_AWS_ACCT:policy/demo-eks-asg-autoscaler
+    echo $C9_AWS_ACCT
+    aws iam detach-role-policy --role-name cluster-awscli-irsa-cluster-autoscaler-role --policy-arn arn:aws:iam::$C9_AWS_ACCT:policy/demo-eks-asg-autoscaler
     aws iam delete-policy --policy-arn arn:aws:iam::$C9_AWS_ACCT:policy/demo-eks-asg-autoscaler
-    aws iam delete-role --role-name cluster-aswcli-irsa-cluster-autoscaler-role
+    aws iam delete-role --role-name cluster-awscli-irsa-cluster-autoscaler-role
 
-    export OIDC_ID=$(aws eks describe-cluster --name cluster-aswcli --query 'cluster.identity.oidc.issuer' --region $C9_REGION | tr -d '\"' | awk -F '//' '{print$2}')
+    export OIDC_ID=$(aws eks describe-cluster --name cluster-awscli --query 'cluster.identity.oidc.issuer' --region $C9_REGION | tr -d '\"' | awk -F '//' '{print$2}')
     aws iam delete-open-id-connect-provider --open-id-connect-provider-arn arn:aws:iam::$C9_AWS_ACCT:oidc-provider/$OIDC_ID
 
-    aws eks delete-fargate-profile --fargate-profile-name wordpress-demo --region $C9_REGION --cluster-name cluster-aswcli
+    aws eks delete-fargate-profile --fargate-profile-name wordpress-demo --region $C9_REGION --cluster-name cluster-awscli
 
     aws cloudformation delete-stack --region $C9_REGION --stack-name cluster-awscli-nodegroup-03-self-managed-bottlerocket
     aws cloudformation delete-stack --region $C9_REGION --stack-name cluster-awscli-nodegroup-02-self-managed-mixed
-    aws eks delete-nodegroup --cluster-name cluster-aswcli --nodegroup-name ccluster-awscli-nodegroup-01 --region $C9_REGION
+    aws eks delete-nodegroup --cluster-name cluster-awscli --nodegroup-name cluster-awscli-nodegroup-01 --region $C9_REGION
+    #add wait
 
     aws ec2 delete-key-pair --key-name cluster_awscli_KeyPair --region $C9_REGION
 
-    aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy --role-name cluster-aswcli-fargate-execution-role
-    aws iam delete-role --role-name cluster-aswcli-fargate-execution-role
+    aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy --role-name cluster-awscli-fargate-execution-role
+    aws iam delete-role --role-name cluster-awscli-fargate-execution-role
 
-    export TEMP_ROLE_NAME="cluster-aswcli-node-self-managed-bottlerocket-group-role"
+    export TEMP_ROLE_NAME="cluster-awscli-node-self-managed-bottlerocket-group-role"
     aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy --role-name $TEMP_ROLE_NAME
     aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly --role-name $TEMP_ROLE_NAME
     aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy --role-name $TEMP_ROLE_NAME
@@ -423,29 +425,31 @@ SO THAT:
     aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore --role-name $TEMP_ROLE_NAME
     aws iam delete-role --role-name $TEMP_ROLE_NAME
 
-    export TEMP_ROLE_NAME="cluster-aswcli-node-self-managed-al2-mixed-instance-group-role"
+    export TEMP_ROLE_NAME="cluster-awscli-node-self-managed-al2-mixed-instance-group-role"
     aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy --role-name $TEMP_ROLE_NAME
     aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly --role-name $TEMP_ROLE_NAME
     aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy --role-name $TEMP_ROLE_NAME
     aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy --role-name $TEMP_ROLE_NAME
     aws iam delete-role --role-name $TEMP_ROLE_NAME
 
-    export TEMP_ROLE_NAME="cluster-aswcli-node-managed-al2-group-role"
+    export TEMP_ROLE_NAME="cluster-awscli-node-managed-al2-group-role"
     aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy --role-name $TEMP_ROLE_NAME
     aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly --role-name $TEMP_ROLE_NAME
     aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy --role-name $TEMP_ROLE_NAME
     aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy --role-name $TEMP_ROLE_NAME
     aws iam delete-role --role-name $TEMP_ROLE_NAME
 
-    aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/AmazonEKSClusterPolicy --role-name cluster-aswcli-cluster-role
-    aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy --role-name cluster-aswcli-cluster-role
-    aws iam delete-role --role-name cluster-aswcli-cluster-role
+    aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/AmazonEKSClusterPolicy --role-name cluster-awscli-cluster-role
+    aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy --role-name cluster-awscli-cluster-role
+    aws iam delete-role --role-name cluster-awscli-cluster-role
 
-    aws iam detach-role-policy --policy-arn arn:aws:iam::$C9_AWS_ACCT:policy/cluster-aswcli-creator --role-name cluster-aswcli-creator-role
-    aws iam delete-policy --policy-arn arn:aws:iam::$C9_AWS_ACCT:policy/cluster-aswcli-creator
-    aws iam delete-role --role-name cluster-aswcli-creator-role
+    aws iam detach-role-policy --policy-arn arn:aws:iam::$C9_AWS_ACCT:policy/cluster-awscli-creator --role-name cluster-awscli-creator-role
+    aws iam delete-policy --policy-arn arn:aws:iam::$C9_AWS_ACCT:policy/cluster-awscli-creator
+    aws iam delete-role --role-name cluster-awscli-creator-role
 
-    aws eks delete-cluster --name cluster-aswcli --region $C9_REGION
+    aws iam list-roles --query 'Roles[].Arn' | grep cluster-awscli
+
+    aws eks delete-cluster --name cluster-awscli --region $C9_REGION
 
   (-) Cleanup Pre-Reqs Script(s)
 
