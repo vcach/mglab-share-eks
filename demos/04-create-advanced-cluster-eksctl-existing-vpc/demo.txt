@@ -50,7 +50,7 @@ SO THAT:
 
         aws configure
 
-(1) Install eksctl
+(1) Install/Update eksctl
 
     (-)
         cd ~/environment/mglab-share-eks/demos/04-create-advanced-cluster-eksctl-existing-vpc
@@ -115,21 +115,21 @@ SO THAT:
         curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
         echo "$(<kubectl.sha256) kubectl" | sha256sum --check
         sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-        kubectl config view --minify
 
         export AWS_ACCESS_KEY_ID=$(cat ~/.aws/credentials | grep aws_access_key_id | awk '{print$3}')
         export AWS_SECRET_ACCESS_KEY=$(cat ~/.aws/credentials | grep aws_secret_access_key | awk '{print$3}')
         aws sts get-caller-identity
 
-        kubectl get all -A
-
         eksctl utils write-kubeconfig --name cluster-eksctl --region $C9_REGION
+        kubectl config view --minify
+        kubectl get all -A
 
     (-) Deploy Cluster Autoscaler
 
-        curl https://raw.githubusercontent.com/kubernetes/autoscaler/master/cluster-autoscaler/cloudprovider/aws/examples/cluster-autoscaler-autodiscover.yaml | sed "s/<YOUR.*NAME>/cluster-eksctl/;s/v1.17.3/v1.18.3/" | kubectl apply -f -
         export CA_SA_ARN=$(eksctl get iamserviceaccount --cluster cluster-eksctl | grep cluster-autoscaler | awk '{print$3}')
         echo $CA_SA_ARN
+
+        curl https://raw.githubusercontent.com/kubernetes/autoscaler/master/cluster-autoscaler/cloudprovider/aws/examples/cluster-autoscaler-autodiscover.yaml | sed "s/<YOUR.*NAME>/cluster-eksctl/;s/v1.17.3/v1.18.3/" | kubectl apply -f -
         kubectl annotate serviceaccount cluster-autoscaler \
           -n kube-system \
           eks.amazonaws.com/role-arn=arn:aws:iam::$C9_AWS_ACCT:role/$CA_SA_ARN
