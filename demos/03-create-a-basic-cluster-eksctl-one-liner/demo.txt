@@ -64,7 +64,13 @@ SO THAT:
 
 (2) Create Cluster with EKSctl
 
-    (-) eksctl create cluster --name cluster-one-liner --region $C9_REGION --with-oidc --managed --nodes 2 --fargate
+    (-) Create Cluster & NodeGroup
+
+        eksctl create cluster --name cluster-one-liner --region $C9_REGION --with-oidc --managed --nodes 2
+
+    (-) Create Fargate Profile
+
+        eksctl create fargateprofile --name wordpress-fargate  --namespace wordpress-fargate --labels "fargate=true" --cluster cluster-one-liner --region $C9_REGION
 
 
 (3) Install kubectl
