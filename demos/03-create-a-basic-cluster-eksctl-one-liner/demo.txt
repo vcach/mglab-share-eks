@@ -70,7 +70,7 @@ SO THAT:
 
     (-) Create Fargate Profile
 
-        eksctl create fargateprofile --name wordpress-fargate  --namespace wordpress-fargate --labels "fargate=true" --cluster cluster-one-liner --region $C9_REGION
+        eksctl create fargateprofile --name fp-wordpress  --namespace wordpress-fargate --labels "fargate=true" --cluster cluster-one-liner --region $C9_REGION
 
 
 (3) Install kubectl
