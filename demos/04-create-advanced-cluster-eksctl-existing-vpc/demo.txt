@@ -142,10 +142,9 @@ SO THAT:
     (-) Deploy Wordpress with PHP front end on Fargate & mysql backend on managed Nodegroup
 
         kubectl apply -f ./artifacts/04-DEMO-k8s-all-in-one-fargate.yaml
-        kubectl get pods -n wordpress-fargate --watch
+        watch kubectl get pods -o wide -n wordpress-fargate
         kubectl get nodes
 
-        watch kubectl get pods -o wide -n wordpress-fargate
         kubectl get svc -o wide -n wordpress-fargate
 
     (-) Navigate to the wordpress service
