@@ -36,6 +36,8 @@ Here is the folder structure for each demo:
 
 #### Current Demos
 
+[Example EKS Time Table](doc/images/timetable.png)
+
 Demo Name     | Demo Link     | Last Automated Test Timestamp
 --- | ---| ---
 01-docker-build-wordpress     | ![link](demos/01-docker-build-wordpress/demo.txt)   | Not Yet Automated
