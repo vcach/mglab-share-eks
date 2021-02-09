@@ -81,12 +81,13 @@ SO THAT:
         curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
         echo "$(<kubectl.sha256) kubectl" | sha256sum --check
         sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-        kubectl config view --minify
 
         export AWS_ACCESS_KEY_ID=$(cat ~/.aws/credentials | grep aws_access_key_id | awk '{print$3}')
         export AWS_SECRET_ACCESS_KEY=$(cat ~/.aws/credentials | grep aws_secret_access_key | awk '{print$3}')
         aws sts get-caller-identity
 
+        eksctl utils write-kubeconfig --name cluster-one-liner --region $C9_REGION
+        kubectl config view --minify
         kubectl get all -A
 
 (4) Validate k8s dialtone by deploying wordpress with front-end running on fargate & mysql back-end running on managed nodegroup
@@ -94,10 +95,10 @@ SO THAT:
     (-) Deploy Wordpress with PHP front end on Fargate & mysql backend on managed Nodegroup
 
         kubectl apply -f ./artifacts/03-DEMO-k8s-all-in-one-fargate.yaml
-        kubectl get pods -A -o wide | grep wordpress
+        watch kubectl get pods -o wide -n wordpress-fargate
         kubectl get nodes -o wide
 
-        kubectl get svc wordpress -o wide
+        kubectl get svc wordpress -n wordpress-fargate -o wide
 
     (-) Navigate to the wordpress service EXTERNAL-IP in browser
 
